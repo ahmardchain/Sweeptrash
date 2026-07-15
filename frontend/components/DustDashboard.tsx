@@ -8,6 +8,7 @@ import { useDeployedTokens } from "@/lib/useDeployedTokens";
 import { useDustBalances } from "@/lib/useDustBalances";
 import { useSweepAll } from "@/lib/useSweepAll";
 import { WMON_ADDRESS } from "@/lib/contracts";
+import { buildAllowlist, isTokenAllowed } from "../../config/tokenAllowlist";
 import { TokenDustCard } from "./TokenDustCard";
 import { SweepSummary } from "./SweepSummary";
 import { SweepPile } from "./SweepPile";
@@ -54,7 +55,21 @@ export function DustDashboard() {
     }
   }, [states, refetchWmon]);
 
-  const dustCount = useMemo(() => balances.filter((b) => b.balance > 0n).length, [balances]);
+  // Only tokens on the verified allowlist are ever shown or swept. Today the
+  // allowlist is built from the deploy manifest; a mainnet build that scanned
+  // wallets for arbitrary tokens would build it from a trusted token registry
+  // instead (see config/tokenAllowlist.ts).
+  const allowlist = useMemo(() => buildAllowlist(tokens), [tokens]);
+  const allowedBalances = useMemo(
+    () => balances.filter((b) => isTokenAllowed(b.token.address, allowlist)),
+    [balances, allowlist],
+  );
+  const hiddenCount = balances.length - allowedBalances.length;
+
+  const dustCount = useMemo(
+    () => allowedBalances.filter((b) => b.balance > 0n).length,
+    [allowedBalances],
+  );
   const hasDust = dustCount > 0;
   const isRunning = phase === "running";
   const isDone = phase === "done";
@@ -62,7 +77,7 @@ export function DustDashboard() {
   async function handleSweep() {
     clearDismissTimers();
     setDismissed(new Set());
-    await sweepAll(balances);
+    await sweepAll(allowedBalances, allowlist);
     refetch();
     refetchWmon();
   }
@@ -106,7 +121,7 @@ export function DustDashboard() {
     );
   }
 
-  const visibleBalances = balances.filter(
+  const visibleBalances = allowedBalances.filter(
     (b) => !dismissed.has(b.token.address) && (b.balance > 0n || states[b.token.address]),
   );
 
@@ -130,6 +145,11 @@ export function DustDashboard() {
               ? "Checking balances…"
               : `${dustCount} token${dustCount === 1 ? "" : "s"} with a balance`}
           </p>
+          {hiddenCount > 0 && (
+            <p className="mt-1 text-xs text-stash-coral">
+              {hiddenCount} token{hiddenCount === 1 ? "" : "s"} hidden — not on the verified allowlist.
+            </p>
+          )}
         </div>
         {!isDone && (
           <button

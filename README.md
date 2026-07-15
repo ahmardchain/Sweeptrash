@@ -168,11 +168,16 @@ is clear:
   plus a tighter default.
 - **Token allowlisting.** The dashboard only ever renders the three known
   demo tokens from `deployed-tokens.json` — it does not scan wallets for
-  arbitrary tokens, so there is no malicious-token exposure today. A real
-  "sweep my actual dust" version would discover tokens from wallet balances,
-  at which point it must check each against a trusted registry (e.g. the
-  Uniswap token list) before ever putting it in the sweep queue, so a
-  hostile airdrop token's `approve`/`transfer` can't be invoked.
+  arbitrary tokens, so there is no malicious-token exposure today. The
+  allowlist **gate is already implemented** (`config/tokenAllowlist.ts`): the
+  dashboard filters to allowlisted tokens and the sweep flow re-checks the
+  gate before it approves or swaps each token, so the swap path itself can't
+  be driven to touch an address outside the trusted set (and a hostile
+  token's `approve`/`transfer` is never invoked). Today the trusted source is
+  the deploy manifest; a real "sweep my actual dust" version that discovered
+  tokens from wallet balances would change one thing — point
+  `buildAllowlist` at a fetched, verified token registry (e.g. the Uniswap
+  token list) — while every enforcement site keeps calling the same gate.
 - **Approvals / Permit2.** Sweeping is sequential: one `approve` +
   `exactInputSingle` pair per token, each confirmed before the next (this
   is the specified MVP behavior). For many tokens that's a lot of wallet

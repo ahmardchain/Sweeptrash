@@ -15,6 +15,7 @@ import {
   WMON_ADDRESS,
 } from "./contracts";
 import { extractErrorMessage } from "./errors";
+import { isTokenAllowed } from "../../config/tokenAllowlist";
 import type { DustBalance } from "./useDustBalances";
 
 export type SweepStatus =
@@ -46,7 +47,7 @@ export function useSweepAll() {
   }, []);
 
   const sweepAll = useCallback(
-    async (dustBalances: DustBalance[]) => {
+    async (dustBalances: DustBalance[], allowlist: Set<string>) => {
       if (!address) return;
 
       const toSweep = dustBalances.filter((d) => d.balance > 0n);
@@ -59,6 +60,19 @@ export function useSweepAll() {
 
       for (const { token, balance } of toSweep) {
         const tokenIn = token.address as `0x${string}`;
+
+        // Allowlist gate: refuse to approve or swap any token not on the
+        // verified allowlist, before spending gas or touching an allowance.
+        // The dashboard already filters to allowlisted tokens; this makes the
+        // swap path itself unable to act on an untrusted address.
+        if (!isTokenAllowed(token.address, allowlist)) {
+          updateToken(token.address, {
+            status: "failed",
+            errorMessage: "Skipped — not on the verified token allowlist.",
+          });
+          continue;
+        }
+
         try {
           updateToken(token.address, { status: "approving" });
 
