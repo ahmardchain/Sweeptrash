@@ -114,6 +114,10 @@ it independently before moving on. If this script fails, that's a
 stop-the-line problem — do not proceed to the frontend until a real swap
 has confirmed on-chain.
 
+> Steps 4–6 can be run in order with a single command:
+> `npm run setup:chain` (deploy → seed → swap test). Run them separately
+> the first time if you want to inspect each step's output.
+
 ### 7. Start the frontend
 
 ```bash

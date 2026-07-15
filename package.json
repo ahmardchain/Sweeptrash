@@ -12,6 +12,7 @@
     "deploy:tokens": "hardhat run scripts/deploy.ts --network monadTestnet",
     "seed:pools": "hardhat run scripts/seedPools.ts --network monadTestnet",
     "test:swap": "hardhat run scripts/testSwap.ts --network monadTestnet",
+    "setup:chain": "npm run deploy:tokens && npm run seed:pools && npm run test:swap",
     "dev": "npm run dev --workspace frontend"
   },
   "license": "MIT",
