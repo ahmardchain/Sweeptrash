@@ -16,9 +16,11 @@ const DUST_TOKENS: DustTokenSpec[] = [
   { name: "TestnetJunk", symbol: "JUNK" },
 ];
 
-// Modest demo balance minted straight to the deployer's wallet — this is
-// what shows up as "dust" to sweep in the frontend.
-const INITIAL_SUPPLY = ethers.parseEther("1000");
+// Small demo balance minted straight to the deployer's wallet — this is
+// what shows up as "dust" to sweep in the frontend. Kept small on purpose:
+// it must stay well within what scripts/seedPools.ts seeds as pool
+// liquidity (SEED_AMOUNT), and testnet MON from faucets is scarce.
+const INITIAL_SUPPLY = ethers.parseEther("2");
 
 async function main() {
   const [deployer] = await ethers.getSigners();

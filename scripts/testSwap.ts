@@ -18,8 +18,10 @@ const { ethers } = await network.connect();
 // exactInputSingle swap of a dust token into WMON, on-chain, on Monad
 // Testnet. Do not treat a failure here as something to work around.
 
-const SWAP_AMOUNT = ethers.parseEther("5");
-const SLIPPAGE_BPS = 500n; // 5% — generous, this is thin testnet liquidity, not a price-sensitive trade.
+// Swaps half of deploy.ts's INITIAL_SUPPLY (2), leaving the rest of this
+// token's dust in the wallet for the frontend "Sweep All" demo afterward.
+const SWAP_AMOUNT = ethers.parseEther("1");
+const SLIPPAGE_BPS = 1000n; // 10% — generous, this is thin testnet liquidity, not a price-sensitive trade.
 
 interface DeployedToken {
   address: string;

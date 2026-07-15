@@ -1,0 +1,89 @@
+@import "tailwindcss";
+
+:root {
+  /* SweepStash palette — warm "tidy desk" paper tones with a mint sweep
+     accent and an amber "dust" accent. Not a dark-mode DeFi dashboard. */
+  --stash-paper: #f6f1e6;
+  --stash-paper-dim: #ede4d2;
+  --stash-card: #fffdf8;
+  --stash-ink: #1c2a22;
+  --stash-ink-soft: #4a5a4f;
+  --stash-border: #ddd2b8;
+
+  --stash-mint: #1f8a5f;
+  --stash-mint-dark: #146b48;
+  --stash-mint-tint: #e2f2e9;
+
+  --stash-dust: #e3963e;
+  --stash-dust-dark: #b8722a;
+  --stash-dust-tint: #fbead3;
+
+  --stash-coral: #d6564b;
+  --stash-coral-tint: #fbe4e1;
+}
+
+@theme inline {
+  --color-stash-paper: var(--stash-paper);
+  --color-stash-paper-dim: var(--stash-paper-dim);
+  --color-stash-card: var(--stash-card);
+  --color-stash-ink: var(--stash-ink);
+  --color-stash-ink-soft: var(--stash-ink-soft);
+  --color-stash-border: var(--stash-border);
+
+  --color-stash-mint: var(--stash-mint);
+  --color-stash-mint-dark: var(--stash-mint-dark);
+  --color-stash-mint-tint: var(--stash-mint-tint);
+
+  --color-stash-dust: var(--stash-dust);
+  --color-stash-dust-dark: var(--stash-dust-dark);
+  --color-stash-dust-tint: var(--stash-dust-tint);
+
+  --color-stash-coral: var(--stash-coral);
+  --color-stash-coral-tint: var(--stash-coral-tint);
+
+  --font-display: var(--font-display);
+  --font-mono: var(--font-mono);
+}
+
+body {
+  font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+  background-image:
+    radial-gradient(circle at 1px 1px, var(--stash-border) 1px, transparent 0);
+  background-size: 24px 24px;
+  background-attachment: fixed;
+}
+
+@keyframes stash-pop-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.92) translateY(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes stash-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-stash-pop-in {
+  animation: stash-pop-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-stash-shimmer {
+  background-image: linear-gradient(
+    100deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.6) 50%,
+    transparent 70%
+  );
+  background-size: 200% 100%;
+  animation: stash-shimmer 1.4s ease-in-out infinite;
+}

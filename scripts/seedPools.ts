@@ -21,7 +21,11 @@ const { ethers } = await network.connect();
 // not meant to reflect real value). Each of the 3 pools gets this much of
 // the dust token (freshly minted by the deployer, who owns DustToken) and
 // this much WMON (wrapped from the deployer's real testnet MON balance).
-const SEED_AMOUNT = ethers.parseEther("10");
+// Kept several times larger than deploy.ts's INITIAL_SUPPLY so a full
+// "Sweep All" from the frontend doesn't crater pool price, and small enough
+// overall (24 WMON across 3 pools) to be realistic to get from a testnet
+// faucet.
+const SEED_AMOUNT = ethers.parseEther("8");
 
 interface DeployedToken {
   address: string;
