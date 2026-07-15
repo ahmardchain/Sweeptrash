@@ -1,0 +1,17 @@
+node_modules/
+.env
+dist/
+
+# Hardhat
+artifacts/
+cache/
+cache_hardhat/
+typechain-types/
+
+# Next.js
+frontend/.next/
+frontend/out/
+frontend/node_modules/
+
+.DS_Store
+*.log
