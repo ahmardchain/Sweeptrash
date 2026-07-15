@@ -1,16 +1,16 @@
-import { readFile } from "node:fs/promises";
-import path from "node:path";
 import { network } from "hardhat";
 import {
   EXPLORER_BASE_URL,
   POOL_FEE_TIER,
   QUOTER_V2_ADDRESS,
+  SLIPPAGE_BPS,
   SWAP_ROUTER_02_ADDRESS,
   WMON_ADDRESS,
   explorerTxUrl,
 } from "../config/addresses.js";
 import { ERC20_ABI } from "../abis/erc20.js";
 import { QUOTER_V2_ABI, SWAP_ROUTER_02_ABI } from "../abis/uniswapV3.js";
+import { loadDeployedTokens } from "./lib/loadDeployedTokens.js";
 
 const { ethers } = await network.connect();
 
@@ -21,27 +21,13 @@ const { ethers } = await network.connect();
 // Swaps half of deploy.ts's INITIAL_SUPPLY (2), leaving the rest of this
 // token's dust in the wallet for the frontend "Sweep All" demo afterward.
 const SWAP_AMOUNT = ethers.parseEther("1");
-const SLIPPAGE_BPS = 1000n; // 10% — generous, this is thin testnet liquidity, not a price-sensitive trade.
-
-interface DeployedToken {
-  address: string;
-  name: string;
-  symbol: string;
-}
 
 async function main() {
   const [signer] = await ethers.getSigners();
   console.log(`Signer: ${signer.address}`);
   console.log(`Explorer: ${EXPLORER_BASE_URL}`);
 
-  const tokensPath = path.join(process.cwd(), "deployed-tokens.json");
-  const tokens: Record<string, DeployedToken> = JSON.parse(
-    await readFile(tokensPath, "utf-8"),
-  );
-  const [token] = Object.values(tokens);
-  if (!token) {
-    throw new Error(`No tokens found in ${tokensPath}. Run the deploy script first.`);
-  }
+  const [token] = await loadDeployedTokens();
 
   console.log(`\nSwapping ${ethers.formatEther(SWAP_AMOUNT)} ${token.symbol} -> WMON`);
 

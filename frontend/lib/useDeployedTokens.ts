@@ -1,16 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import type { DeployedToken } from "../../config/deployedTokens";
 
-export interface DeployedToken {
-  address: string;
-  name: string;
-  symbol: string;
-}
+export type { DeployedToken };
 
 interface DeployedTokensResponse {
   tokens: DeployedToken[];
   seeded: boolean;
+  error?: string;
 }
 
 export function useDeployedTokens() {

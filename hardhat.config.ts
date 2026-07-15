@@ -14,16 +14,32 @@ import { CHAIN_ID, RPC_URL } from "./config/addresses.js";
 const require = createRequire(import.meta.url);
 const solcPath = require.resolve("solc/soljson.js");
 
+// The `solc` npm package's own version *is* the compiler version it bundles
+// (see node_modules/solc/package.json), and package.json pins it with no
+// caret so `npm install` can't silently resolve a different one. Assert it
+// here too so a manual edit to either the pin or SOLIDITY_VERSION below
+// fails loudly at config load instead of silently compiling with the wrong
+// compiler.
+const SOLIDITY_VERSION = "0.8.28";
+const installedSolcVersion: string = require("solc/package.json").version;
+if (installedSolcVersion !== SOLIDITY_VERSION) {
+  throw new Error(
+    `hardhat.config.ts declares solidity version ${SOLIDITY_VERSION} but the installed ` +
+      `solc package is ${installedSolcVersion}. Update SOLIDITY_VERSION or pin ` +
+      `"solc": "${SOLIDITY_VERSION}" (no caret) in package.json and reinstall.`,
+  );
+}
+
 export default defineConfig({
   plugins: [hardhatToolboxMochaEthersPlugin],
   solidity: {
     profiles: {
       default: {
-        version: "0.8.28",
+        version: SOLIDITY_VERSION,
         path: solcPath,
       },
       production: {
-        version: "0.8.28",
+        version: SOLIDITY_VERSION,
         path: solcPath,
         settings: {
           optimizer: {

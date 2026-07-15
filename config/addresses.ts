@@ -32,10 +32,15 @@ export const QUOTER_V2_ADDRESS = "0x661e93cca42afacb172121ef892830ca3b70f08d";
 /** Standard Uniswap V3 pool fee tiers, in hundredths of a bip. 3000 = 0.3%. */
 export const POOL_FEE_TIER = 3000;
 
+/**
+ * Slippage tolerance applied to every swap's amountOutMinimum, computed from
+ * a live QuoterV2 quote taken immediately before the swap. Generous by
+ * design — testnet pools here are thin and this isn't a price-sensitive
+ * trade. Shared by scripts/testSwap.ts and frontend/lib/useSweepAll.ts so
+ * the two can't silently drift apart.
+ */
+export const SLIPPAGE_BPS = 1000n;
+
 export function explorerTxUrl(txHash: string): string {
   return `${EXPLORER_BASE_URL}/tx/${txHash}`;
-}
-
-export function explorerAddressUrl(address: string): string {
-  return `${EXPLORER_BASE_URL}/address/${address}`;
 }

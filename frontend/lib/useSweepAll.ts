@@ -9,6 +9,7 @@ import {
   POOL_FEE_TIER,
   QUOTER_V2_ABI,
   QUOTER_V2_ADDRESS,
+  SLIPPAGE_BPS,
   SWAP_ROUTER_02_ABI,
   SWAP_ROUTER_02_ADDRESS,
   WMON_ADDRESS,
@@ -31,10 +32,6 @@ export interface SweepTokenState {
   amountOut?: bigint;
   errorMessage?: string;
 }
-
-// 10% slippage tolerance — generous, this is thin testnet liquidity, not a
-// price-sensitive trade. Matches scripts/testSwap.ts.
-const SLIPPAGE_BPS = 1000n;
 
 export function useSweepAll() {
   const { address } = useAccount();

@@ -17,7 +17,7 @@ const DISMISS_DELAY_MS = 1100;
 
 export function DustDashboard() {
   const { address } = useAccount();
-  const { tokens, seeded, isLoading: tokensLoading } = useDeployedTokens();
+  const { tokens, seeded, error: deployedTokensError, isLoading: tokensLoading } = useDeployedTokens();
   const { balances, isLoading: balancesLoading, refetch } = useDustBalances(tokens, address);
   const { phase, states, sweepAll, reset } = useSweepAll();
 
@@ -28,16 +28,28 @@ export function DustDashboard() {
   });
 
   const [dismissed, setDismissed] = useState<Set<string>>(new Set());
-  const scheduledDismissals = useRef<Set<string>>(new Set());
+  const dismissTimers = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
+
+  function clearDismissTimers() {
+    for (const timer of dismissTimers.current.values()) clearTimeout(timer);
+    dismissTimers.current.clear();
+  }
+
+  // Clear any in-flight timers on unmount only — this must not re-run when
+  // `states` changes, or it would cancel timers we just scheduled below.
+  useEffect(() => {
+    return () => clearDismissTimers();
+  }, []);
 
   useEffect(() => {
     for (const [tokenAddress, state] of Object.entries(states)) {
-      if (state.status === "confirmed" && !scheduledDismissals.current.has(tokenAddress)) {
-        scheduledDismissals.current.add(tokenAddress);
-        setTimeout(() => {
+      if (state.status === "confirmed" && !dismissTimers.current.has(tokenAddress)) {
+        const timer = setTimeout(() => {
+          dismissTimers.current.delete(tokenAddress);
           setDismissed((prev) => new Set(prev).add(tokenAddress));
           refetchWmon();
         }, DISMISS_DELAY_MS);
+        dismissTimers.current.set(tokenAddress, timer);
       }
     }
   }, [states, refetchWmon]);
@@ -48,17 +60,17 @@ export function DustDashboard() {
   const isDone = phase === "done";
 
   async function handleSweep() {
+    clearDismissTimers();
     setDismissed(new Set());
-    scheduledDismissals.current = new Set();
     await sweepAll(balances);
     refetch();
     refetchWmon();
   }
 
   function handleReset() {
+    clearDismissTimers();
     reset();
     setDismissed(new Set());
-    scheduledDismissals.current = new Set();
   }
 
   if (!address) {
@@ -67,6 +79,15 @@ export function DustDashboard() {
         <p className="font-display text-lg font-medium text-stash-ink-soft">
           Connect a wallet to see your dust.
         </p>
+      </div>
+    );
+  }
+
+  if (deployedTokensError) {
+    return (
+      <div className="animate-stash-pop-in rounded-2xl border border-stash-coral/40 bg-stash-coral-tint px-8 py-10 text-center">
+        <p className="font-display font-semibold text-stash-coral">Couldn&apos;t read deployed-tokens.json</p>
+        <p className="mt-2 text-sm text-stash-ink-soft">{deployedTokensError}</p>
       </div>
     );
   }
@@ -155,7 +176,7 @@ export function DustDashboard() {
             </motion.div>
           ))}
         </AnimatePresence>
-        {!balancesLoading && !hasDust && dismissed.size === 0 && (
+        {!balancesLoading && visibleBalances.length === 0 && phase !== "done" && (
           <div className="rounded-2xl border border-dashed border-stash-border px-6 py-10 text-center text-sm text-stash-ink-soft">
             No dust here — every deployed token has a zero balance for this wallet.
           </div>

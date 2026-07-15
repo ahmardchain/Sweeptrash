@@ -1,5 +1,3 @@
-import { readFile } from "node:fs/promises";
-import path from "node:path";
 import { network } from "hardhat";
 import {
   NONFUNGIBLE_POSITION_MANAGER_ADDRESS,
@@ -14,6 +12,7 @@ import {
 } from "../config/uniswap.js";
 import { NONFUNGIBLE_POSITION_MANAGER_ABI } from "../abis/uniswapV3.js";
 import { WMON_ABI } from "../abis/wmon.js";
+import { loadDeployedTokens } from "./lib/loadDeployedTokens.js";
 
 const { ethers } = await network.connect();
 
@@ -27,25 +26,10 @@ const { ethers } = await network.connect();
 // faucet.
 const SEED_AMOUNT = ethers.parseEther("8");
 
-interface DeployedToken {
-  address: string;
-  name: string;
-  symbol: string;
-}
-
 async function main() {
   const [deployer] = await ethers.getSigners();
 
-  const tokensPath = path.join(process.cwd(), "deployed-tokens.json");
-  const tokens: Record<string, DeployedToken> = JSON.parse(
-    await readFile(tokensPath, "utf-8"),
-  );
-  const tokenList = Object.values(tokens);
-  if (tokenList.length === 0) {
-    throw new Error(
-      `No tokens found in ${tokensPath}. Run the deploy script first.`,
-    );
-  }
+  const tokenList = await loadDeployedTokens();
 
   const wmon = new ethers.Contract(WMON_ADDRESS, WMON_ABI, deployer);
   const positionManager = new ethers.Contract(

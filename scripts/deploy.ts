@@ -1,6 +1,7 @@
 import { writeFile } from "node:fs/promises";
 import path from "node:path";
 import { network } from "hardhat";
+import type { DeployedToken } from "../config/deployedTokens.js";
 
 const { ethers } = await network.connect();
 
@@ -26,10 +27,7 @@ async function main() {
   const [deployer] = await ethers.getSigners();
   console.log(`Deploying DustTokens from ${deployer.address}`);
 
-  const deployed: Record<
-    string,
-    { address: string; name: string; symbol: string }
-  > = {};
+  const deployed: Record<string, DeployedToken> = {};
 
   for (const token of DUST_TOKENS) {
     const factory = await ethers.getContractFactory("DustToken");
