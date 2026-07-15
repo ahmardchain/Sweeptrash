@@ -9,6 +9,7 @@ artifacts/
 cache/
 cache_hardhat/
 typechain-types/
+types/
 
 # Next.js
 frontend/.next/
