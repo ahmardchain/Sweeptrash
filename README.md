@@ -152,3 +152,39 @@ wallets too.
   imprecise pricing.
 - **Desktop-oriented UI.** No dedicated mobile layout; this is built as a
   desktop demo.
+
+## Mainnet hardening (out of scope for this hackathon build)
+
+SweepStash is a testnet demo, and several of its deliberate simplifications
+would need to change before anything like it went to mainnet with real
+funds. None of these are bugs in the current build — they're consequences
+of the testnet-demo scope — but they're worth writing down so the next step
+is clear:
+
+- **Slippage.** The swap flow uses a fixed 10% tolerance against a live
+  QuoterV2 quote, which is fine for these thin cosmetic testnet pools. On
+  mainnet a static 10% ceiling invites sandwich/MEV extraction; you'd want
+  user-adjustable slippage and/or a tolerance derived from real pool depth,
+  plus a tighter default.
+- **Token allowlisting.** The dashboard only ever renders the three known
+  demo tokens from `deployed-tokens.json` — it does not scan wallets for
+  arbitrary tokens, so there is no malicious-token exposure today. A real
+  "sweep my actual dust" version would discover tokens from wallet balances,
+  at which point it must check each against a trusted registry (e.g. the
+  Uniswap token list) before ever putting it in the sweep queue, so a
+  hostile airdrop token's `approve`/`transfer` can't be invoked.
+- **Approvals / Permit2.** Sweeping is sequential: one `approve` +
+  `exactInputSingle` pair per token, each confirmed before the next (this
+  is the specified MVP behavior). For many tokens that's a lot of wallet
+  prompts. Migrating to Uniswap's Permit2 would collapse approvals into a
+  single signed payload and reduce the number of confirmations a user has
+  to review.
+- **Deploy key management.** The Hardhat scripts read a raw private key from
+  a local, git-ignored `.env` — appropriate for a throwaway testnet
+  deployer, not for production. A mainnet deploy pipeline should use a
+  hardware wallet or a KMS-backed signer instead of a plaintext key, and
+  should never reuse a key that has touched a `.env` file.
+- **Quote freshness.** Quotes come from an on-chain QuoterV2 call
+  immediately before each swap. On mainnet you'd want to bound how stale a
+  quote can be relative to submission and guard against a quote-vs-execution
+  price gap beyond the slippage tolerance.
